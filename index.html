@@ -1,0 +1,161 @@
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Winning Solitaire</title>
+    <style type="text/css">
+
+        body {
+            color: #ffffff;
+            background-color: #008000;
+            margin: 0;
+            overflow: hidden;
+        }
+
+    </style>
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+</head>
+<body>
+
+<script>
+    var canvas = document.createElement( 'canvas' );
+    canvas.style.position = 'absolute';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild( canvas );
+
+    var context = canvas.getContext( '2d' );
+
+    function write(image) {
+        var pos = $(image).offset();
+        var cwidth = 85, cwidthhalf = cwidth / 2;
+        var cheight = 125, cheighthalf = cheight / 2;
+
+        var particles = [];
+
+        var Particle = function (x, y, sx, sy, image) {
+
+            if (sx === 0) sx = 2;
+
+            this.update = function () {
+
+                x += sx;
+                y += sy;
+
+                if (x < ( -cwidthhalf ) || x > ( canvas.width + cwidthhalf )) {
+                    particles.splice(particles.indexOf(this), 1);
+                    write(image);
+                    return false;
+                }
+
+                if (y > canvas.height - cheighthalf) {
+                    y = canvas.height - cheighthalf;
+                    sx = sx * (Math.random() * (0.99 - 0.93) + 0.93);
+                    sy = -sy * (Math.random() * (0.99 - 0.85) + 0.85);
+                }
+
+                sy += 0.98;
+
+                var placePosX = Math.floor(x - cwidthhalf);
+                var placePosY = Math.floor(y - cheighthalf);
+                context.fillStyle = "#fff";
+                roundRect(context, placePosX - 10, placePosY - 10, cwidth + 20, cheight + 20, 3, true);
+                context.fillStyle = '';
+                context.drawImage(image, 0, 0, image.width, image.height, placePosX, placePosY, cwidth, cheight);
+
+                return true;
+
+            }
+
+        };
+
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            if (typeof stroke == 'undefined') {
+                stroke = true;
+            }
+            if (typeof radius === 'undefined') {
+                radius = 5;
+            }
+            if (typeof radius === 'number') {
+                radius = {tl: radius, tr: radius, br: radius, bl: radius};
+            } else {
+                var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+                for (var side in defaultRadius) {
+                    radius[side] = radius[side] || defaultRadius[side];
+                }
+            }
+            ctx.beginPath();
+            ctx.moveTo(x + radius.tl, y);
+            ctx.lineTo(x + width - radius.tr, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+            ctx.lineTo(x + width, y + height - radius.br);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+            ctx.lineTo(x + radius.bl, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+            ctx.lineTo(x, y + radius.tl);
+            ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+            ctx.closePath();
+            if (fill) {
+                ctx.fill();
+            }
+            if (stroke) {
+                ctx.stroke();
+            }
+
+        }
+
+        var throwCard = function (x, y, image) {
+            var particle = new Particle(x, y, Math.floor(Math.random() * 6 - 5) * 2, -Math.random() * 16, image);
+            particles.push(particle);
+
+        };
+
+        setInterval(function () {
+
+            var i = 0, l = particles.length;
+
+            while (i < l) {
+
+                particles[i].update() ? i++ : l--;
+
+            }
+
+        }, 1000 / 60);
+
+        throwCard(pos.left, pos.top, image);
+    }
+
+</script>
+<div class="cards">
+    <div class="card"><img src="trekksoft-pos-64.png"></div>
+    <div class="card"><img src="trekksoft-bi-64.png"></div>
+    <div class="card"><img src="trekksoft-logo-64.png"></div>
+    <div class="card"><img src="trekksoft-api-logo-36x36.png"></div>
+</div>
+<script>
+    $(document).ready(function(){
+        $('.card img').each(function(ind, item) {
+            write(item);
+        });
+    });
+</script>
+<style>
+    .cards {
+        position: absolute;
+        right: 0;
+        visibility: hidden;
+    }
+
+    .card {
+        float: left;
+        width: 71px;
+        height: 96px;
+        margin: 5px;
+        background: #ffffff;
+        border-radius: 4px;
+    }
+</style>
+</body>
+</html>
